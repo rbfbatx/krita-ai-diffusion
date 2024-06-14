@@ -60,6 +60,7 @@ required_custom_nodes = [
 class SDVersion(Enum):
     sd15 = "SD 1.5"
     sdxl = "SD XL"
+    sd3 = "SD 3"
 
     auto = "Automatic"
     all = "All"
@@ -70,6 +71,8 @@ class SDVersion(Enum):
             return SDVersion.sd15
         if string == "sdxl":
             return SDVersion.sdxl
+        if string == "sd3":
+            return SDVersion.sd3
         return None
 
     @staticmethod
@@ -98,9 +101,18 @@ class SDVersion(Enum):
     def has_controlnet_inpaint(self):
         return self is SDVersion.sd15
 
+    @property
+    def supports_lcm(self):
+        return self in [SDVersion.sd15, SDVersion.sdxl]
+
+    @staticmethod
+    def list():
+        return [SDVersion.sd15, SDVersion.sdxl, SDVersion.sd3]
+
 
 class ResourceKind(Enum):
     checkpoint = "Stable Diffusion Checkpoint"
+    clip = "CLIP model"
     controlnet = "ControlNet model"
     clip_vision = "CLIP Vision model"
     ip_adapter = "IP-Adapter model"
@@ -739,6 +751,8 @@ def is_required(
 
 # fmt: off
 search_paths: dict[str, list[str]] = {
+    resource_id(ResourceKind.clip, SDVersion.sd3, "clip_l") : ["clip_l"],
+    resource_id(ResourceKind.clip, SDVersion.sd3, "clip_g") : ["clip_g"],
     resource_id(ResourceKind.controlnet, SDVersion.sd15, ControlMode.inpaint):  ["control_v11p_sd15_inpaint"],
     resource_id(ResourceKind.controlnet, SDVersion.sd15, ControlMode.scribble): ["control_v11p_sd15_scribble", "control_lora_rank128_v11p_sd15_scribble"],
     resource_id(ResourceKind.controlnet, SDVersion.sdxl, ControlMode.scribble): ["control-lora-sketch-rank", "sai_xl_sketch_"],
@@ -780,6 +794,8 @@ search_paths: dict[str, list[str]] = {
 
 required_resource_ids = set(
     [
+        ResourceId(ResourceKind.clip, SDVersion.sd3, "clip_l"),
+        ResourceId(ResourceKind.clip, SDVersion.sd3, "clip_g"),
         ResourceId(ResourceKind.controlnet, SDVersion.sd15, ControlMode.inpaint),
         ResourceId(ResourceKind.controlnet, SDVersion.sd15, ControlMode.blur),
         ResourceId(ResourceKind.ip_adapter, SDVersion.sd15, ControlMode.reference),
